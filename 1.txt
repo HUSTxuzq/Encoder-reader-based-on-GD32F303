@@ -1,2 +1,11 @@
+<<<<<<< HEAD
 11211sdad
 dsadas
+=======
+11211weqe
+weqe
+dasdasd
+dsadsa
+dasd
+adas
+>>>>>>> new_branch
