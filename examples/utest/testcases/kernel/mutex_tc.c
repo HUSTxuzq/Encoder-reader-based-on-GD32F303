@@ -336,7 +336,7 @@ static void test_dynamic_mutex_create(void)
 
     /* PRIO mode */
     dynamic_mutex = rt_mutex_create("dynamic_mutex", RT_IPC_FLAG_PRIO);
-    if (RT_NULL == dynamic_mutex)
+    if (RT_NULL == result)
     {
         uassert_true(RT_FALSE);
     }

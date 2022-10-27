@@ -1,0 +1,13 @@
+.\build\components.o: ..\..\..\..\src\components.c
+.\build\components.o: ..\..\..\..\include\rthw.h
+.\build\components.o: ..\..\..\..\include\rtthread.h
+.\build\components.o: .\rtconfig.h
+.\build\components.o: ..\..\..\..\include\rtdebug.h
+.\build\components.o: ..\..\..\..\include\rtdef.h
+.\build\components.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\components.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\components.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\components.o: ..\..\..\..\include\rtservice.h
+.\build\components.o: ..\..\..\..\include\rtm.h
+.\build\components.o: ..\..\..\..\include\rtthread.h
+.\build\components.o: ..\..\..\..\components\finsh\finsh.h

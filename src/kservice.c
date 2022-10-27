@@ -20,9 +20,6 @@
  * 2021-02-28     Meco Man     add RT_KSERVICE_USING_STDLIB
  * 2021-12-20     Meco Man     implement rt_strcpy()
  * 2022-01-07     Gabriel      add __on_rt_assert_hook
- * 2022-06-04     Meco Man     remove strnlen
- * 2022-08-24     Yunjie       make rt_memset word-independent to adapt to ti c28x (16bit word)
- * 2022-08-30     Yunjie       make rt_vsnprintf adapt to ti c28x (16bit int)
  */
 
 #include <rtthread.h>
@@ -52,42 +49,8 @@ RT_WEAK void rt_hw_us_delay(rt_uint32_t us)
 {
     (void) us;
     RT_DEBUG_LOG(RT_DEBUG_DEVICE, ("rt_hw_us_delay() doesn't support for this board."
-        "Please consider implementing rt_hw_us_delay() in another file.\n"));
+        "Please consider implementing rt_hw_us_delay() in another file."));
 }
-
-static const char* rt_errno_strs[] =
-{
-    "OK",
-    "ERROR",
-    "ETIMOUT",
-    "ERSFULL",
-    "ERSEPTY",
-    "ENOMEM",
-    "ENOSYS",
-    "EBUSY",
-    "EIO",
-    "EINTRPT",
-    "EINVAL",
-    "EUNKNOW"
-};
-
-/**
- * This function return a pointer to a string that contains the
- * message of error.
- *
- * @param error the errorno code
- * @return a point to error message string
- */
-const char *rt_strerror(rt_err_t error)
-{
-    if (error < 0)
-        error = -error;
-
-    return (error > RT_EINVAL + 1) ?
-           rt_errno_strs[RT_EINVAL + 1] :
-           rt_errno_strs[error];
-}
-RTM_EXPORT(rt_strerror);
 
 /**
  * This function gets the global errno for the current thread.
@@ -184,7 +147,7 @@ RT_WEAK void *rt_memset(void *s, int c, rt_ubase_t count)
 
     return s;
 #else
-#define LBLOCKSIZE      (sizeof(rt_ubase_t))
+#define LBLOCKSIZE      (sizeof(long))
 #define UNALIGNED(X)    ((long)X & (LBLOCKSIZE - 1))
 #define TOO_SMALL(LEN)  ((LEN) < LBLOCKSIZE)
 
@@ -192,10 +155,8 @@ RT_WEAK void *rt_memset(void *s, int c, rt_ubase_t count)
     char *m = (char *)s;
     unsigned long buffer;
     unsigned long *aligned_addr;
-    unsigned char d = (unsigned int)c & (unsigned char)(-1);  /* To avoid sign extension, copy C to an
-                                unsigned variable. (unsigned)((char)(-1))=0xFF for 8bit and =0xFFFF for 16bit: word independent */
-
-    RT_ASSERT(LBLOCKSIZE == 2 || LBLOCKSIZE == 4 || LBLOCKSIZE == 8);
+    unsigned int d = c & 0xff;  /* To avoid sign extension, copy C to an
+                                unsigned variable.  */
 
     if (!TOO_SMALL(count) && !UNALIGNED(s))
     {
@@ -205,9 +166,16 @@ RT_WEAK void *rt_memset(void *s, int c, rt_ubase_t count)
         /* Store d into each char sized location in buffer so that
          * we can set large blocks quickly.
          */
-        for (i = 0; i < LBLOCKSIZE; i++)
+        if (LBLOCKSIZE == 4)
         {
-            *(((unsigned char *)&buffer)+i) = d;
+            buffer = (d << 8) | d;
+            buffer |= (buffer << 16);
+        }
+        else
+        {
+            buffer = 0;
+            for (i = 0; i < LBLOCKSIZE; i ++)
+                buffer = (buffer << 8) | d;
         }
 
         while (count >= LBLOCKSIZE * 4)
@@ -284,7 +252,7 @@ RT_WEAK void *rt_memcpy(void *dst, const void *src, rt_ubase_t count)
     char *src_ptr = (char *)src;
     long *aligned_dst;
     long *aligned_src;
-    rt_ubase_t len = count;
+    int len = count;
 
     /* If the size is small, or either SRC or DST is unaligned,
     then punt into the byte copy loop.  This should be rare. */
@@ -585,6 +553,7 @@ RTM_EXPORT(rt_strlen);
 
 #endif /* RT_KSERVICE_USING_STDLIB */
 
+#if !defined(RT_KSERVICE_USING_STDLIB) || defined(__ARMCC_VERSION)
 /**
  * The  strnlen()  function  returns the number of characters in the
  * string pointed to by s, excluding the terminating null byte ('\0'),
@@ -608,6 +577,10 @@ rt_size_t rt_strnlen(const char *s, rt_ubase_t maxlen)
     return sc - s;
 }
 RTM_EXPORT(rt_strnlen);
+#ifdef __ARMCC_VERSION
+rt_size_t strnlen(const char *s, rt_size_t maxlen) __attribute__((alias("rt_strnlen")));
+#endif /* __ARMCC_VERSION */
+#endif /* !defined(RT_KSERVICE_USING_STDLIB) || defined(__ARMCC_VERSION) */
 
 #ifdef RT_USING_HEAP
 /**
@@ -630,6 +603,9 @@ char *rt_strdup(const char *s)
     return tmp;
 }
 RTM_EXPORT(rt_strdup);
+#ifdef __ARMCC_VERSION
+char *strdup(const char *s) __attribute__((alias("rt_strdup")));
+#endif /* __ARMCC_VERSION */
 #endif /* RT_USING_HEAP */
 
 /**
@@ -640,7 +616,7 @@ void rt_show_version(void)
     rt_kprintf("\n \\ | /\n");
     rt_kprintf("- RT -     Thread Operating System\n");
     rt_kprintf(" / | \\     %d.%d.%d build %s %s\n",
-               (rt_int32_t)RT_VERSION_MAJOR, (rt_int32_t)RT_VERSION_MINOR, (rt_int32_t)RT_VERSION_PATCH, __DATE__, __TIME__);
+               RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
     rt_kprintf(" 2006 - 2022 Copyright by RT-Thread team\n");
 }
 RTM_EXPORT(rt_show_version);
@@ -666,13 +642,26 @@ rt_inline int divide(long *n, int base)
     int res;
 
     /* optimized for processor which does not support divide instructions. */
+    if (base == 10)
+    {
 #ifdef RT_KPRINTF_USING_LONGLONG
-    res = (int)(((unsigned long long)*n) % base);
-    *n = (long long)(((unsigned long long)*n) / base);
+        res = (int)(((unsigned long long)*n) % 10U);
+        *n = (long long)(((unsigned long long)*n) / 10U);
 #else
-    res = (int)(((unsigned long)*n) % base);
-    *n = (long)(((unsigned long)*n) / base);
+        res = (int)(((unsigned long)*n) % 10U);
+        *n = (long)(((unsigned long)*n) / 10U);
 #endif
+    }
+    else
+    {
+#ifdef RT_KPRINTF_USING_LONGLONG
+        res = (int)(((unsigned long long)*n) % 16U);
+        *n = (long long)(((unsigned long long)*n) / 16U);
+#else
+        res = (int)(((unsigned long)*n) % 16U);
+        *n = (long)(((unsigned long)*n) / 16U);
+#endif
+    }
 
     return res;
 }
@@ -710,9 +699,9 @@ static char *print_number(char *buf,
 {
     char c, sign;
 #ifdef RT_KPRINTF_USING_LONGLONG
-    char tmp[64];
-#else
     char tmp[32];
+#else
+    char tmp[16];
 #endif /* RT_KPRINTF_USING_LONGLONG */
     int precision_bak = precision;
     const char *digits;
@@ -746,7 +735,7 @@ static char *print_number(char *buf,
 #ifdef RT_PRINTF_SPECIAL
     if (type & SPECIAL)
     {
-        if (base == 2 || base == 16)
+        if (base == 16)
             size -= 2;
         else if (base == 8)
             size--;
@@ -796,16 +785,7 @@ static char *print_number(char *buf,
 #ifdef RT_PRINTF_SPECIAL
     if (type & SPECIAL)
     {
-        if (base == 2)
-        {
-            if (buf < end)
-                *buf = '0';
-            ++ buf;
-            if (buf < end)
-                *buf = 'b';
-            ++ buf;
-        }
-        else if (base == 8)
+        if (base == 8)
         {
             if (buf < end)
                 *buf = '0';
@@ -1064,9 +1044,6 @@ RT_WEAK int rt_vsnprintf(char *buf, rt_size_t size, const char *fmt, va_list arg
             continue;
 
         /* integer number formats - set up the flags and "break" */
-        case 'b':
-            base = 2;
-            break;
         case 'o':
             base = 8;
             break;
@@ -1111,7 +1088,7 @@ RT_WEAK int rt_vsnprintf(char *buf, rt_size_t size, const char *fmt, va_list arg
         }
         else if (qualifier == 'h')
         {
-            num = (rt_uint16_t)va_arg(args, int);
+            num = (rt_uint16_t)va_arg(args, rt_int32_t);
             if (flags & SIGN) num = (rt_int16_t)num;
         }
         else
@@ -1581,8 +1558,6 @@ RT_WEAK void rt_free(void *rmem)
 
     /* call 'rt_free' hook */
     RT_OBJECT_HOOK_CALL(rt_free_hook, (rmem));
-    /* NULL check */
-    if (rmem == RT_NULL) return;
     /* Enter critical zone */
     level = _heap_lock();
     _MEM_FREE(rmem);
@@ -1704,8 +1679,6 @@ RT_WEAK void rt_free_align(void *ptr)
 {
     void *real_ptr;
 
-    /* NULL check */
-    if (ptr == RT_NULL) return;
     real_ptr = (void *) * (rt_ubase_t *)((rt_ubase_t)ptr - sizeof(void *));
     rt_free(real_ptr);
 }

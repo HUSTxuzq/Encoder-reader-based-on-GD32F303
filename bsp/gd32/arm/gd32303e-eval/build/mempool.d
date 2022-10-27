@@ -1,0 +1,13 @@
+.\build\mempool.o: ..\..\..\..\src\mempool.c
+.\build\mempool.o: ..\..\..\..\include\rthw.h
+.\build\mempool.o: ..\..\..\..\include\rtthread.h
+.\build\mempool.o: .\rtconfig.h
+.\build\mempool.o: ..\..\..\..\include\rtdebug.h
+.\build\mempool.o: ..\..\..\..\include\rtdef.h
+.\build\mempool.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\mempool.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\mempool.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\mempool.o: ..\..\..\..\include\rtservice.h
+.\build\mempool.o: ..\..\..\..\include\rtm.h
+.\build\mempool.o: ..\..\..\..\include\rtthread.h
+.\build\mempool.o: ..\..\..\..\components\finsh\finsh.h

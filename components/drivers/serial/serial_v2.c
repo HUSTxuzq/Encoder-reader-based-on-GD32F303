@@ -12,7 +12,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 
-#define DBG_TAG    "Serial"
+#define DBG_TAG    "UART"
 #define DBG_LVL    DBG_INFO
 #include <rtdbg.h>
 
@@ -254,7 +254,7 @@ static rt_size_t rt_serial_update_read_index(struct rt_ringbuffer    *rb,
 }
 
 static rt_size_t rt_serial_update_write_index(struct rt_ringbuffer  *rb,
-                                                     rt_uint16_t     write_size)
+                                                     rt_uint16_t     write_index)
 {
     rt_uint16_t size;
     RT_ASSERT(rb != RT_NULL);
@@ -262,28 +262,27 @@ static rt_size_t rt_serial_update_write_index(struct rt_ringbuffer  *rb,
     /* whether has enough space */
     size = rt_ringbuffer_space_len(rb);
 
-    /* no space, drop some data */
-    if (size < write_size)
-    {
-        write_size = size;
-#if !defined(RT_USING_ULOG) || defined(ULOG_USING_ISR_LOG)
-        LOG_W("The serial buffer (len %d) is overflow.", rb->buffer_size);
-#endif
-    }
+    /* no space */
+    if (size == 0)
+        return 0;
 
-    if (rb->buffer_size - rb->write_index > write_size)
+    /* drop some data */
+    if (size < write_index)
+        write_index = size;
+
+    if (rb->buffer_size - rb->write_index > write_index)
     {
         /* this should not cause overflow because there is enough space for
          * length of data in current mirror */
-        rb->write_index += write_size;
-        return write_size;
+        rb->write_index += write_index;
+        return write_index;
     }
 
     /* we are going into the other side of the mirror */
     rb->write_mirror = ~rb->write_mirror;
-    rb->write_index = write_size - (rb->buffer_size - rb->write_index);
+    rb->write_index = write_index - (rb->buffer_size - rb->write_index);
 
-    return write_size;
+    return write_index;
 }
 
 
@@ -463,12 +462,6 @@ static rt_size_t _serial_fifo_tx_blocking_nbuf(struct rt_device        *dev,
     RT_ASSERT((serial != RT_NULL) && (buffer != RT_NULL));
     tx_fifo = (struct rt_serial_tx_fifo *) serial->serial_tx;
     RT_ASSERT(tx_fifo != RT_NULL);
-
-    if (rt_thread_self() == RT_NULL || (serial->parent.open_flag & RT_DEVICE_FLAG_STREAM))
-    {
-        /* using poll tx when the scheduler not startup or in stream mode */
-        return _serial_poll_tx(dev, pos, buffer, size);
-    }
 
     /* When serial transmit in tx_blocking mode,
      * if the activated mode is RT_TRUE, it will return directly */
@@ -904,7 +897,6 @@ static rt_err_t rt_serial_init(struct rt_device *dev)
 
     RT_ASSERT(dev != RT_NULL);
     serial = (struct rt_serial_device *)dev;
-    RT_ASSERT(serial->ops->transmit != RT_NULL);
 
     /* initialize rx/tx */
     serial->serial_rx = RT_NULL;
@@ -1128,15 +1120,15 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
             if (args != RT_NULL)
             {
                 struct serial_configure *pconfig = (struct serial_configure *) args;
-                if (((pconfig->rx_bufsz != serial->config.rx_bufsz) || (pconfig->tx_bufsz != serial->config.tx_bufsz))
-                        && serial->parent.ref_count)
+                if (serial->parent.ref_count)
                 {
                     /*can not change buffer size*/
                     return -RT_EBUSY;
                 }
-                /* set serial configure */
+               /* set serial configure */
                 serial->config = *pconfig;
-                serial->ops->configure(serial, (struct serial_configure *) args);
+                serial->ops->configure(serial,
+                                    (struct serial_configure *) args);
             }
 
             break;
@@ -1254,7 +1246,7 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
                 struct winsize* p_winsize;
                 p_winsize = (struct winsize*)args;
 
-                if(rt_thread_self() != rt_thread_find(FINSH_THREAD_NAME))
+                if(rt_thread_self() != rt_thread_find("tshell"))
                 {
                     /* only can be used in tshell thread; otherwise, return default size */
                     p_winsize->ws_col = 80;
@@ -1397,7 +1389,7 @@ static rt_size_t rt_serial_write(struct rt_device *dev,
         return _serial_poll_tx(dev, pos, buffer, size);
     }
 
-    if (dev->open_flag & RT_SERIAL_TX_BLOCKING)
+    if (dev->open_flag | RT_SERIAL_TX_BLOCKING)
     {
         if ((tx_fifo->rb.buffer_ptr) == RT_NULL)
         {
@@ -1484,18 +1476,13 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
             struct rt_serial_rx_fifo *rx_fifo;
             rt_size_t rx_length = 0;
             rx_fifo = (struct rt_serial_rx_fifo *)serial->serial_rx;
-            rt_base_t level;
             RT_ASSERT(rx_fifo != RT_NULL);
 
             /* If the event is RT_SERIAL_EVENT_RX_IND, rx_length is equal to 0 */
             rx_length = (event & (~0xff)) >> 8;
 
             if (rx_length)
-            { /* RT_SERIAL_EVENT_RX_DMADONE MODE */
-                level = rt_hw_interrupt_disable();
                 rt_serial_update_write_index(&(rx_fifo->rb), rx_length);
-                rt_hw_interrupt_enable(level);
-            }
 
             /* Get the length of the data from the ringbuffer */
             rx_length = rt_ringbuffer_data_len(&rx_fifo->rb);

@@ -1,0 +1,12 @@
+.\build\syscall_mem.o: ..\..\..\..\components\libc\compilers\armlibc\syscall_mem.c
+.\build\syscall_mem.o: ..\..\..\..\include\rtthread.h
+.\build\syscall_mem.o: .\rtconfig.h
+.\build\syscall_mem.o: ..\..\..\..\include\rtdebug.h
+.\build\syscall_mem.o: ..\..\..\..\include\rtdef.h
+.\build\syscall_mem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\syscall_mem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\syscall_mem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\syscall_mem.o: ..\..\..\..\include\rtservice.h
+.\build\syscall_mem.o: ..\..\..\..\include\rtm.h
+.\build\syscall_mem.o: ..\..\..\..\include\rtthread.h
+.\build\syscall_mem.o: ..\..\..\..\components\finsh\finsh.h

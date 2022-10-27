@@ -1,0 +1,12 @@
+.\build\showmem.o: ..\..\..\..\libcpu\arm\common\showmem.c
+.\build\showmem.o: ..\..\..\..\include\rtthread.h
+.\build\showmem.o: .\rtconfig.h
+.\build\showmem.o: ..\..\..\..\include\rtdebug.h
+.\build\showmem.o: ..\..\..\..\include\rtdef.h
+.\build\showmem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\showmem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\showmem.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\showmem.o: ..\..\..\..\include\rtservice.h
+.\build\showmem.o: ..\..\..\..\include\rtm.h
+.\build\showmem.o: ..\..\..\..\include\rtthread.h
+.\build\showmem.o: ..\..\..\..\components\finsh\finsh.h

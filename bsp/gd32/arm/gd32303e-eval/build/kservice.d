@@ -1,0 +1,13 @@
+.\build\kservice.o: ..\..\..\..\src\kservice.c
+.\build\kservice.o: ..\..\..\..\include\rtthread.h
+.\build\kservice.o: .\rtconfig.h
+.\build\kservice.o: ..\..\..\..\include\rtdebug.h
+.\build\kservice.o: ..\..\..\..\include\rtdef.h
+.\build\kservice.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\kservice.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\kservice.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\kservice.o: ..\..\..\..\include\rtservice.h
+.\build\kservice.o: ..\..\..\..\include\rtm.h
+.\build\kservice.o: ..\..\..\..\include\rtthread.h
+.\build\kservice.o: ..\..\..\..\components\finsh\finsh.h
+.\build\kservice.o: ..\..\..\..\include\rthw.h

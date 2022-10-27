@@ -26,8 +26,8 @@ from SCons.Script import AddOption
 import platform
 
 def AddOptions():
-    ''' ===== Add generic options to SCons ===== '''
-
+    ''' ===== Add options to SCons ===== '''
+    
     AddOption('--dist',
                       dest = 'make-dist',
                       action = 'store_true',
@@ -38,7 +38,7 @@ def AddOptions():
                       action = 'store_true',
                       default = False,
                       help = 'make distribution and strip useless files')
-    AddOption('--dist-ide', '--dist-rtstudio',
+    AddOption('--dist-ide',
                       dest = 'make-dist-ide',
                       action = 'store_true',
                       default = False,
@@ -85,10 +85,6 @@ def AddOptions():
                       dest = 'target',
                       type = 'string',
                       help = 'set target project: mdk/mdk4/mdk5/iar/vs/vsc/ua/cdk/ses/makefile/eclipse/codelite/cmake')
-    AddOption('--exec-path',
-                dest = 'exec-path',
-                type = 'string',
-                help = 'set RTT_EXEC_PATH temperately')
     AddOption('--stackanalysis',
                 dest = 'stackanalysis',
                 action = 'store_true',
@@ -124,3 +120,4 @@ def AddOptions():
                     action = 'store_true',
                     default = False,
                     help = 'make menuconfig for RT-Thread BSP')
+

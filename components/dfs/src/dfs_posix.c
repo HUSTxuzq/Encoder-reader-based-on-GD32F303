@@ -248,17 +248,15 @@ off_t lseek(int fd, off_t offset, int whence)
 
         return -1;
     }
-    if(offset != d->pos)
+    result = dfs_file_lseek(d, offset);
+    if (result < 0)
     {
-        result = dfs_file_lseek(d, offset);
-        if (result < 0)
-        {
-            fd_put(d);
-            rt_set_errno(result);
+        fd_put(d);
+        rt_set_errno(result);
 
-            return -1;
-        }
+        return -1;
     }
+
     /* release the ref-count of fd */
     fd_put(d);
 

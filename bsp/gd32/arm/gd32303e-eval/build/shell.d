@@ -1,0 +1,17 @@
+.\build\shell.o: ..\..\..\..\components\finsh\shell.c
+.\build\shell.o: ..\..\..\..\include\rthw.h
+.\build\shell.o: ..\..\..\..\include\rtthread.h
+.\build\shell.o: .\rtconfig.h
+.\build\shell.o: ..\..\..\..\include\rtdebug.h
+.\build\shell.o: ..\..\..\..\include\rtdef.h
+.\build\shell.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\shell.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\shell.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\shell.o: ..\..\..\..\include\rtservice.h
+.\build\shell.o: ..\..\..\..\include\rtm.h
+.\build\shell.o: ..\..\..\..\include\rtthread.h
+.\build\shell.o: ..\..\..\..\components\finsh\finsh.h
+.\build\shell.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\string.h
+.\build\shell.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdio.h
+.\build\shell.o: ..\..\..\..\components\finsh\shell.h
+.\build\shell.o: ..\..\..\..\components\finsh\msh.h

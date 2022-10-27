@@ -431,7 +431,7 @@ endmenu
 
 config RT_VER_NUM
     hex
-    default 0x50000
+    default 0x40101
     help
         RT-Thread version number
 

@@ -1,0 +1,13 @@
+.\build\stdlib.o: ..\..\..\..\components\libc\compilers\common\stdlib.c
+.\build\stdlib.o: ..\..\..\..\include\rtthread.h
+.\build\stdlib.o: .\rtconfig.h
+.\build\stdlib.o: ..\..\..\..\include\rtdebug.h
+.\build\stdlib.o: ..\..\..\..\include\rtdef.h
+.\build\stdlib.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\stdlib.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\stdlib.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\stdlib.o: ..\..\..\..\include\rtservice.h
+.\build\stdlib.o: ..\..\..\..\include\rtm.h
+.\build\stdlib.o: ..\..\..\..\include\rtthread.h
+.\build\stdlib.o: ..\..\..\..\components\finsh\finsh.h
+.\build\stdlib.o: ..\..\..\..\include\rtdbg.h

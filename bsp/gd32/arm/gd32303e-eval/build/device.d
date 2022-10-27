@@ -1,0 +1,12 @@
+.\build\device.o: ..\..\..\..\src\device.c
+.\build\device.o: ..\..\..\..\include\rtthread.h
+.\build\device.o: .\rtconfig.h
+.\build\device.o: ..\..\..\..\include\rtdebug.h
+.\build\device.o: ..\..\..\..\include\rtdef.h
+.\build\device.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdint.h
+.\build\device.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stddef.h
+.\build\device.o: F:\keil_mdk530\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\device.o: ..\..\..\..\include\rtservice.h
+.\build\device.o: ..\..\..\..\include\rtm.h
+.\build\device.o: ..\..\..\..\include\rtthread.h
+.\build\device.o: ..\..\..\..\components\finsh\finsh.h

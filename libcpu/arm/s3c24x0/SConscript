@@ -11,11 +11,11 @@ CPPPATH = [cwd]
 if rtconfig.PLATFORM in ['armcc', 'armclang']:
     src += Glob('*_rvds.S')
 
-if rtconfig.PLATFORM in ['gcc']:
+if rtconfig.PLATFORM == 'gcc':
     src += Glob('*_init.S')
     src += Glob('*_gcc.S')
 
-if rtconfig.PLATFORM in ['iccarm']:
+if rtconfig.PLATFORM == 'iar':
     src += Glob('*_iar.S')
 
 group = DefineGroup('CPU', src, depend = [''], CPPPATH = CPPPATH)

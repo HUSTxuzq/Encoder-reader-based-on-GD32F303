@@ -667,7 +667,6 @@ void mmcsd_detect(void *param)
                     continue;
                 }
                 mmcsd_host_unlock(host);
-                rt_mb_send(&mmcsd_hotpluge_mb, (rt_ubase_t)host);
             }
             else
             {

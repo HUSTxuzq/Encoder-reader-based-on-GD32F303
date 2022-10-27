@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2022, RT-Thread Development Team
+ * Copyright (c) 2006-2021, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -42,22 +42,13 @@
  * 2022-01-07     Gabriel      move some __on_rt_xxxxx_hook to dedicated c source files
  * 2022-01-12     Meco Man     remove RT_THREAD_BLOCK
  * 2022-04-20     Meco Man     change version number to v4.1.1
- * 2022-04-21     THEWON       add macro RT_VERSION_CHECK
- * 2022-06-29     Meco Man     add RT_USING_LIBC and standard libc headers
- * 2022-08-16     Meco Man     change version number to v5.0.0
- * 2022-09-12     Meco Man     define rt_ssize_t
  */
 
 #ifndef __RT_DEF_H__
 #define __RT_DEF_H__
 
+/* include rtconfig header to import configuration */
 #include <rtconfig.h>
-#ifdef RT_USING_LIBC
-#include <stdint.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#endif /* RT_USING_LIBC */
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,24 +61,19 @@ extern "C" {
 /**@{*/
 
 /* RT-Thread version information */
-#define RT_VERSION_MAJOR                5               /**< Major version number (X.x.x) */
-#define RT_VERSION_MINOR                0               /**< Minor version number (x.X.x) */
-#define RT_VERSION_PATCH                0               /**< Patch version number (x.x.X) */
-
-/* e.g. #if (RTTHREAD_VERSION >= RT_VERSION_CHECK(4, 1, 0) */
-#define RT_VERSION_CHECK(major, minor, revise)          ((major * 10000) + (minor * 100) + revise)
+#define RT_VERSION                      4L              /**< major version number */
+#define RT_SUBVERSION                   1L              /**< minor version number */
+#define RT_REVISION                     1L              /**< revise version number */
 
 /* RT-Thread version */
-#define RTTHREAD_VERSION                RT_VERSION_CHECK(RT_VERSION_MAJOR, RT_VERSION_MINOR, RT_VERSION_PATCH)
-
+#define RTTHREAD_VERSION                ((RT_VERSION * 10000) + \
+                                         (RT_SUBVERSION * 100) + RT_REVISION)
 
 /* RT-Thread basic data type definitions */
-typedef int                             rt_bool_t;      /**< boolean type */
-typedef signed long                     rt_base_t;      /**< Nbit CPU related date type */
-typedef unsigned long                   rt_ubase_t;     /**< Nbit unsigned CPU related data type */
-
 #ifndef RT_USING_ARCH_DATA_TYPE
 #ifdef RT_USING_LIBC
+#include <stdint.h>
+#include <stddef.h>
 typedef int8_t                          rt_int8_t;      /**<  8bit integer type */
 typedef int16_t                         rt_int16_t;     /**< 16bit integer type */
 typedef int32_t                         rt_int32_t;     /**< 32bit integer type */
@@ -97,7 +83,7 @@ typedef uint32_t                        rt_uint32_t;    /**< 32bit unsigned inte
 typedef int64_t                         rt_int64_t;     /**< 64bit integer type */
 typedef uint64_t                        rt_uint64_t;    /**< 64bit unsigned integer type */
 typedef size_t                          rt_size_t;      /**< Type for size number */
-typedef ssize_t                         rt_ssize_t;     /**< Used for a count of bytes or an error indication */
+
 #else
 typedef signed   char                   rt_int8_t;      /**<  8bit integer type */
 typedef signed   short                  rt_int16_t;     /**< 16bit integer type */
@@ -105,17 +91,22 @@ typedef signed   int                    rt_int32_t;     /**< 32bit integer type 
 typedef unsigned char                   rt_uint8_t;     /**<  8bit unsigned integer type */
 typedef unsigned short                  rt_uint16_t;    /**< 16bit unsigned integer type */
 typedef unsigned int                    rt_uint32_t;    /**< 32bit unsigned integer type */
+
 #ifdef ARCH_CPU_64BIT
 typedef signed long                     rt_int64_t;     /**< 64bit integer type */
 typedef unsigned long                   rt_uint64_t;    /**< 64bit unsigned integer type */
+typedef unsigned long                   rt_size_t;      /**< Type for size number */
 #else
 typedef signed long long                rt_int64_t;     /**< 64bit integer type */
 typedef unsigned long long              rt_uint64_t;    /**< 64bit unsigned integer type */
+typedef unsigned int                    rt_size_t;      /**< Type for size number */
 #endif /* ARCH_CPU_64BIT */
-typedef rt_ubase_t                      rt_size_t;      /**< Type for size number */
-typedef rt_base_t                       rt_ssize_t;     /**< Used for a count of bytes or an error indication */
 #endif /* RT_USING_LIBC */
 #endif /* RT_USING_ARCH_DATA_TYPE */
+
+typedef int                             rt_bool_t;      /**< boolean type */
+typedef long                            rt_base_t;      /**< Nbit CPU related date type */
+typedef unsigned long                   rt_ubase_t;     /**< Nbit unsigned CPU related data type */
 
 typedef rt_base_t                       rt_err_t;       /**< Type for error number */
 typedef rt_uint32_t                     rt_time_t;      /**< Type for time stamp */
@@ -128,22 +119,12 @@ typedef rt_base_t                       rt_off_t;       /**< Type for offset */
 #define RT_TRUE                         1               /**< boolean true  */
 #define RT_FALSE                        0               /**< boolean fails */
 
-/* null pointer definition */
-#define RT_NULL                         0
-
 /**@}*/
 
 /* maximum value of base type */
-#ifdef RT_USING_LIBC
-#define RT_UINT8_MAX                    UINT8_MAX       /**< Maximum number of UINT8 */
-#define RT_UINT16_MAX                   UINT16_MAX      /**< Maximum number of UINT16 */
-#define RT_UINT32_MAX                   UINT32_MAX      /**< Maximum number of UINT32 */
-#else
 #define RT_UINT8_MAX                    0xff            /**< Maximum number of UINT8 */
 #define RT_UINT16_MAX                   0xffff          /**< Maximum number of UINT16 */
 #define RT_UINT32_MAX                   0xffffffff      /**< Maximum number of UINT32 */
-#endif /* RT_USING_LIBC */
-
 #define RT_TICK_MAX                     RT_UINT32_MAX   /**< Maximum number of tick */
 
 /* maximum value of ipc type */
@@ -157,76 +138,84 @@ typedef rt_base_t                       rt_off_t;       /**< Type for offset */
 
 /* Compiler Related Definitions */
 #if defined(__ARMCC_VERSION)           /* ARM Compiler */
-#define RT_SECTION(x)               __attribute__((section(x)))
-#define RT_USED                     __attribute__((used))
-#define ALIGN(n)                    __attribute__((aligned(n)))
-#define RT_WEAK                     __attribute__((weak))
-#define rt_inline                   static __inline
-/* module compiling */
-#ifdef RT_USING_MODULE
-#define RTT_API                     __declspec(dllimport)
-#else
-#define RTT_API                     __declspec(dllexport)
-#endif /* RT_USING_MODULE */
+    #include <stdarg.h>
+    #define RT_SECTION(x)               __attribute__((section(x)))
+    #define RT_USED                     __attribute__((used))
+    #define ALIGN(n)                    __attribute__((aligned(n)))
+    #define RT_WEAK                     __attribute__((weak))
+    #define rt_inline                   static __inline
+    /* module compiling */
+    #ifdef RT_USING_MODULE
+        #define RTT_API                 __declspec(dllimport)
+    #else
+        #define RTT_API                 __declspec(dllexport)
+    #endif /* RT_USING_MODULE */
 #elif defined (__IAR_SYSTEMS_ICC__)     /* for IAR Compiler */
-#define RT_SECTION(x)               @ x
-#define RT_USED                     __root
-#define PRAGMA(x)                   _Pragma(#x)
-#define ALIGN(n)                    PRAGMA(data_alignment=n)
-#define RT_WEAK                     __weak
-#define rt_inline                   static inline
-#define RTT_API
+    #include <stdarg.h>
+    #define RT_SECTION(x)               @ x
+    #define RT_USED                     __root
+    #define PRAGMA(x)                   _Pragma(#x)
+    #define ALIGN(n)                    PRAGMA(data_alignment=n)
+    #define RT_WEAK                     __weak
+    #define rt_inline                   static inline
+    #define RTT_API
 #elif defined (__GNUC__)                /* GNU GCC Compiler */
-#ifndef RT_USING_LIBC
-/* the version of GNU GCC must be greater than 4.x */
-typedef __builtin_va_list           __gnuc_va_list;
-typedef __gnuc_va_list              va_list;
-#define va_start(v,l)               __builtin_va_start(v,l)
-#define va_end(v)                   __builtin_va_end(v)
-#define va_arg(v,l)                 __builtin_va_arg(v,l)
-#endif /* RT_USING_LIBC */
-#define RT_SECTION(x)               __attribute__((section(x)))
-#define RT_USED                     __attribute__((used))
-#define ALIGN(n)                    __attribute__((aligned(n)))
-#define RT_WEAK                     __attribute__((weak))
-#define rt_inline                   static __inline
-#define RTT_API
+    #ifdef RT_USING_NEWLIB
+        #include <stdarg.h>
+    #else
+        /* the version of GNU GCC must be greater than 4.x */
+        typedef __builtin_va_list       __gnuc_va_list;
+        typedef __gnuc_va_list          va_list;
+        #define va_start(v,l)           __builtin_va_start(v,l)
+        #define va_end(v)               __builtin_va_end(v)
+        #define va_arg(v,l)             __builtin_va_arg(v,l)
+    #endif /* RT_USING_NEWLIB */
+    #define RT_SECTION(x)               __attribute__((section(x)))
+    #define RT_USED                     __attribute__((used))
+    #define ALIGN(n)                    __attribute__((aligned(n)))
+    #define RT_WEAK                     __attribute__((weak))
+    #define rt_inline                   static __inline
+    #define RTT_API
 #elif defined (__ADSPBLACKFIN__)        /* for VisualDSP++ Compiler */
-#define RT_SECTION(x)               __attribute__((section(x)))
-#define RT_USED                     __attribute__((used))
-#define ALIGN(n)                    __attribute__((aligned(n)))
-#define RT_WEAK                     __attribute__((weak))
-#define rt_inline                   static inline
-#define RTT_API
+    #include <stdarg.h>
+    #define RT_SECTION(x)               __attribute__((section(x)))
+    #define RT_USED                     __attribute__((used))
+    #define ALIGN(n)                    __attribute__((aligned(n)))
+    #define RT_WEAK                     __attribute__((weak))
+    #define rt_inline                   static inline
+    #define RTT_API
 #elif defined (_MSC_VER)
-#define RT_SECTION(x)
-#define RT_USED
-#define ALIGN(n)                    __declspec(align(n))
-#define RT_WEAK
-#define rt_inline                   static __inline
-#define RTT_API
+    #include <stdarg.h>
+    #define RT_SECTION(x)
+    #define RT_USED
+    #define ALIGN(n)                    __declspec(align(n))
+    #define RT_WEAK
+    #define rt_inline                   static __inline
+    #define RTT_API
 #elif defined (__TI_COMPILER_VERSION__)
-/* The way that TI compiler set section is different from other(at least
-    * GCC and MDK) compilers. See ARM Optimizing C/C++ Compiler 5.9.3 for more
-    * details. */
-#define RT_SECTION(x)               __attribute__((section(x)))
-#define RT_USED                     __attribute__((used))
-#define PRAGMA(x)                   _Pragma(#x)
-#define ALIGN(n)                    __attribute__((aligned(n)))
-#define RT_WEAK                     __attribute__((weak))
-#define rt_inline                   static inline
-#define RTT_API
+    #include <stdarg.h>
+    /* The way that TI compiler set section is different from other(at least
+     * GCC and MDK) compilers. See ARM Optimizing C/C++ Compiler 5.9.3 for more
+     * details. */
+    #define RT_SECTION(x)
+    #define RT_USED
+    #define PRAGMA(x)                   _Pragma(#x)
+    #define ALIGN(n)
+    #define RT_WEAK
+    #define rt_inline                   static inline
+    #define RTT_API
 #elif defined (__TASKING__)
-#define RT_SECTION(x)               __attribute__((section(x)))
-#define RT_USED                     __attribute__((used, protect))
-#define PRAGMA(x)                   _Pragma(#x)
-#define ALIGN(n)                    __attribute__((__align(n)))
-#define RT_WEAK                     __attribute__((weak))
-#define rt_inline                   static inline
-#define RTT_API
+    #include <stdarg.h>
+    #define RT_SECTION(x)               __attribute__((section(x)))
+    #define RT_USED                     __attribute__((used, protect))
+    #define PRAGMA(x)                   _Pragma(#x)
+    #define ALIGN(n)                    __attribute__((__align(n)))
+    #define RT_WEAK                     __attribute__((weak))
+    #define rt_inline                   static inline
+    #define RTT_API
 #else
     #error not supported tool chain
-#endif /* __ARMCC_VERSION */
+#endif
 
 /* initialization export */
 #ifdef RT_USING_COMPONENTS_INIT
@@ -363,6 +352,14 @@ typedef int (*init_fn_t)(void);
  * would return 12.
  */
 #define RT_ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
+
+/**
+ * @ingroup BasicDef
+ *
+ * @def RT_NULL
+ * Similar as the \c NULL in C library.
+ */
+#define RT_NULL                         (0)
 
 /**
  * Double List structure
@@ -514,7 +511,7 @@ struct rt_object_information
 
 /* 1 or 3 */
 #ifndef RT_TIMER_SKIP_LIST_MASK
-#define RT_TIMER_SKIP_LIST_MASK         0x3             /**< Timer skips the list mask */
+#define RT_TIMER_SKIP_LIST_MASK         0x3
 #endif
 
 /**
@@ -692,12 +689,8 @@ struct rt_thread
     rt_ubase_t  remaining_tick;                         /**< remaining tick */
 
 #ifdef RT_USING_CPU_USAGE
-    rt_uint64_t  duration_tick;                         /**< cpu usage tick */
+    rt_uint64_t  duration_tick;                          /**< cpu usage tick */
 #endif /* RT_USING_CPU_USAGE */
-
-#ifdef RT_USING_PTHREADS
-    void  *pthread_data;                                /**< the handle of pthread data, adapt 32/64bit */
-#endif /* RT_USING_PTHREADS */
 
     struct rt_timer thread_timer;                       /**< built-in thread timer */
 
